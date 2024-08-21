@@ -1,6 +1,6 @@
 /*
-             Práctica 1 Dibujo de primitivas 2D
-                     Miguel García
+            Práctica 1 Dibujo de primitivas 2D
+                    Miguel García
                       20/08/2024
 */
 
