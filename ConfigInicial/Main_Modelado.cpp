@@ -1,3 +1,8 @@
+/*
+		  Práctica 3 Modelado geométrico
+				  Miguel García
+					01/09/2024
+*/
 #include<iostream>
 
 //#define GLEW_STATIC
@@ -19,10 +24,12 @@ void Inputs(GLFWwindow *window);
 
 
 const GLint WIDTH = 800, HEIGHT = 600;
-float movX=0.0f;
-float movY=0.0f;
-float movZ=-5.0f;
+float movX = -20.0f;
+float movY = 0.0f;
+float movZ = -25.0f;
 float rot = 0.0f;
+
+
 int main() {
 	glfwInit();
 	//Verificación de compatibilidad 
@@ -34,7 +41,7 @@ int main() {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Modelado geometrico", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(WIDTH, HEIGHT, "Modelado geometrico Miguel", nullptr, nullptr);
 
 	int screenWidth, screenHeight;
 
@@ -78,54 +85,56 @@ int main() {
 
 	// Set up vertex data (and buffer(s)) and attribute pointers
 
-	
-
-	// use with Perspective Projection
+	// Define los vértices y colores
 	float vertices[] = {
-		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f,0.0f,//Front
-		0.5f, -0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		0.5f,  0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		0.5f,  0.5f, 0.5f,  1.0f, 0.0f,0.0f,
-		-0.5f,  0.5f, 0.5f, 1.0f, 0.0f,0.0f,
-		-0.5f, -0.5f, 0.5f, 1.0f, 0.0f,0.0f,
-		
-	    -0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,//Back
-		 0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		 0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		 0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-	    -0.5f,  0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-	    -0.5f, -0.5f,-0.5f, 0.0f, 1.0f,0.0f,
-		
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f, 0.0f,1.0f,
-		 0.5f,  -0.5f, 0.5f, 0.0f, 0.0f,1.0f,
-      
-		-0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f, -0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f, -0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 1.0f,0.0f,
-		
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,1.0f,
-		0.5f, -0.5f, -0.5f,  0.0f, 1.0f,1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f,1.0f,
-		0.5f, -0.5f,  0.5f,  0.0f, 1.0f,1.0f,
-		-0.5f, -0.5f,  0.5f, 0.0f, 1.0f,1.0f,
-		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,1.0f,
-		
-		-0.5f,  0.5f, -0.5f, 1.0f, 0.2f,0.5f,
-		0.5f,  0.5f, -0.5f,  1.0f, 0.2f,0.5f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.2f,0.5f,
-		0.5f,  0.5f,  0.5f,  1.0f, 0.2f,0.5f,
-		-0.5f,  0.5f,  0.5f, 1.0f, 0.2f,0.5f,
-		-0.5f,  0.5f, -0.5f, 1.0f, 0.2f,0.5f,
+		// Front face (Amarillo)
+		-0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, 0.5f, 1.0f, 1.0f, 0.0f,
+
+		// Back face (Amarillo)
+		-0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f,
+
+		// Right face (Naranja)
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+
+		 // Left face (Naranja)
+		 -0.5f,  0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+		 -0.5f,  0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 -0.5f, -0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 -0.5f, -0.5f, -0.5f,  1.0f, 0.6f, 0.0f,
+		 -0.5f, -0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+		 -0.5f,  0.5f,  0.5f,  1.0f, 0.6f, 0.0f,
+
+		 // Top face (Café)
+		 -0.5f,  0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f,  0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f,  0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f,  0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		 -0.5f,  0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		 -0.5f,  0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
+
+		 // Bottom face (Café)
+		 -0.5f, -0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f, -0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f, -0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		  0.5f, -0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		 -0.5f, -0.5f,  0.5f, 0.6f, 0.3f, 0.1f,
+		 -0.5f, -0.5f, -0.5f, 0.6f, 0.3f, 0.1f,
 	};
-
-
 
 
 	GLuint VBO, VAO;
@@ -197,40 +206,76 @@ int main() {
 
 		glBindVertexArray(VAO);
 	
-		//Base de la mesa
-	    model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(3.0f, 0.1f, 2.0f)); //Ancho, grosor, profundidad
-		model = glm::translate(model, glm::vec3(0.0f, 0.6f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		//Pata 1
+		// Cuerpo baby Duck
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));  //Tamaño de la pata
-		model = glm::translate(model, glm::vec3(2.9f, -0.6f, 1.9f)); // Posiciona la pata 
+		model = glm::translate(model, glm::vec3(19.0f, 0.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 8.0f, 4.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36); 
+
+		// Pico
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(19.0f, 2.5f, 2.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(2.5f, 1.0f, 3.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Pata 2
+		// Ojos
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));  //Tamaño de la pata
-		model = glm::translate(model, glm::vec3(-2.9f, -0.6f, 1.9f)); // Posiciona la pata 
+		model = glm::translate(model, glm::vec3(19.0f, 2.5f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.5f, 1.0f, 1.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Pata 3
+		// Aletas
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));  //Tamaño de la pata
-		model = glm::translate(model, glm::vec3(-2.9f, -0.6f, -1.9f)); // Posiciona la pata 
+		model = glm::translate(model, glm::vec3(19.0f, -2.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(6.0f, 3.0f, 3.0f));
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		//Pata 4
+		// Cola
 		model = glm::mat4(1.0f);
-		model = glm::scale(model, glm::vec3(0.1f, 0.6f, 0.1f));  //Tamaño de la pata
-		model = glm::translate(model, glm::vec3(2.9f, -0.6f, -1.9f)); // Posiciona la pata 
+		model = glm::translate(model, glm::vec3(19.0f, -2.0f, -2.0f));
+		model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pierna Izquierda
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(19.0f, -5.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, 0.0f)); 
+		model = glm::scale(model, glm::vec3(0.5f, 2.5f, 2.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Pata Izquierda
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(19.0f, -5.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-1.0f, -1.5f, 0.0f)); 
+		model = glm::scale(model, glm::vec3(1.5f, 0.5f, 2.5f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Pierna Derecha
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(19.0f, -5.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.0f, 0.0f, 0.0f)); 
+		model = glm::scale(model, glm::vec3(0.5f, 2.5f, 2.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Pata Derecha
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(19.0f, -5.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.0f, -1.5f, 0.0f)); 
+		model = glm::scale(model, glm::vec3(1.5f, 0.5f, 2.5f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
 		
 		glBindVertexArray(0);
 		// Swap the screen buffers
@@ -252,9 +297,9 @@ int main() {
 		 movX += 0.008f;
 	 if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		 movX -= 0.008f;
-	 if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+	 if (glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS)
 		 movY += 0.008f;
-	 if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+	 if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
 		 movY -= 0.008f;
 	 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		 movZ -= 0.008f;
