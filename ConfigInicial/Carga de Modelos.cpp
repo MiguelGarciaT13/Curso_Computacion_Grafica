@@ -96,6 +96,8 @@ int main( )
     // Load models
     Model dog((char*)"Models/RedDog.obj");
     Model igloo((char*)"Models/Igloo/igloo.obj");
+    Model pinguino((char*)"Models/Pinguino/PinguinoCuerpo.obj");
+    Model foca((char*)"Models/foca/foca.obj");
     glm::mat4 projection = glm::perspective( camera.GetZoom( ), ( float )SCREEN_WIDTH/( float )SCREEN_HEIGHT, 0.1f, 100.0f );
     
    
@@ -122,20 +124,35 @@ int main( )
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
 
-        // Draw the loaded model
+        // Draw the loaded model Dog
         glm::mat4 model(1);
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         dog.Draw(shader);
 
-        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(2.0f, 2.0f, 2.0f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        dog.Draw(shader);
+        //Modelo Igloo
 
-        model = glm::translate(model, glm::vec3(4.5f, -5.0f, -15.0f));
-        model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+        model = glm::translate(model, glm::vec3(4.5f, -2.35f, 15.0f));
+        model = glm::scale(model, glm::vec3(0.12f, 0.1f, 0.12f));
         glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         igloo.Draw(shader);
+
+        //Modelo Pinguino
+
+        model = glm::translate(model, glm::vec3(-25.0f, 20.1f, -110.0f));
+        model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        pinguino.Draw(shader);
+
+        //Modelo foca
+
+        model = glm::translate(model, glm::vec3(3.5f, -5.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(2.5f, 2.5f, 2.5f));
+        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        foca.Draw(shader);
+
+
+
+     
 
         // Swap the buffers
         glfwSwapBuffers( window );
