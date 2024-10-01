@@ -48,6 +48,8 @@ GLfloat lastFrame = 0.0f;
 float rot = 0.0f;
 bool activanim = false;
 
+float angle = 0.0f; 
+
 
 int main()
 {
@@ -105,6 +107,9 @@ int main()
     // Load models
     Model red_dog((char*)"Models/RedDog.obj");
     Model foca((char*)"Models/foca/foca.obj");
+    Model igloo((char*)"Models/Igloo/igloo.obj");
+    Model pinguino((char*)"Models/Pinguino/PinguinoCuerpo.obj");
+
 
     glm::mat4 projection = glm::perspective(camera.GetZoom(), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
@@ -179,7 +184,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
-    image = stbi_load("Models/foca/color.jpg", &textureWidth, &textureHeight, &nrChannels, 0);
+    image = stbi_load("Models/Igloo/roughness 4.png", &textureWidth, &textureHeight, &nrChannels, 0);
   
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
     glGenerateMipmap(GL_TEXTURE_2D);
@@ -221,7 +226,9 @@ int main()
 
         // Configuración de la segunda luz
         GLint lightPos2Loc = glGetUniformLocation(lightingShader.Program, "light2.position");  // Localización de light2
-        glUniform3f(lightPos2Loc, lightPos2.x + movelightPos2, lightPos2.y + movelightPos2, lightPos2.z + movelightPos2);
+        //glUniform3f(lightPos2Loc, lightPos2.x + movelightPos2, lightPos2.y + movelightPos2, lightPos2.z + movelightPos2);
+        glUniform3f(lightPos2Loc, lightPos2.x, lightPos2.y, lightPos2.z);
+
 
         // Set lights properties first light
 
@@ -230,7 +237,7 @@ int main()
         glUniform3f(glGetUniformLocation(lightingShader.Program, "light.specular"), 0.0f, 0.0f, 0.0f);
 
         // Propiedades de la segunda luz (ambient, diffuse, specular)
-        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 0.5f, 0.5f, 0.5f); 
+        glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.ambient"), 1.0f, 1.0f, 1.0f); 
         glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.diffuse"), 1.0f, 1.0f, 1.0f); 
         glUniform3f(glGetUniformLocation(lightingShader.Program, "light2.specular"), 1.0f, 1.0f, 1.0f); 
 
@@ -244,7 +251,7 @@ int main()
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.ambient"), 0.5f, 0.5f, 0.5f);
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.diffuse"), 0.8f, 0.8f, 0.0f);
         glUniform3f(glGetUniformLocation(lightingShader.Program, "material.specular"), 1.0f, 1.0f, 1.0f);
-        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 0.8f);
+        glUniform1f(glGetUniformLocation(lightingShader.Program, "material.shininess"), 1.0f);
 
 
         // Draw the loaded model
@@ -252,15 +259,31 @@ int main()
         model = glm::scale(model, glm::vec3(3.0f, 3.0f, 3.0f));
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
-        red_dog.Draw(lightingShader);
+        //red_dog.Draw(lightingShader);
         
         //Mando a dibujar el modelo foca
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(3.0f, 0.0f, 0.0f));
+        model = glm::translate(model, glm::vec3(3.0f, 1.0f, 0.0f));
         model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f)); 
         glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
         foca.Draw(lightingShader); 
+
+        //Modelo Igloo
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(4.5f, -2.35f, 15.0f));
+        model = glm::scale(model, glm::vec3(0.12f, 0.1f, 0.12f));
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        igloo.Draw(lightingShader);
+
+        //Modelo Pinguino
+
+        model = glm::translate(model, glm::vec3(-25.0f, 20.1f, -110.0f));
+        model = glm::scale(model, glm::vec3(1.5f, 1.5f, 1.5f));
+        glUniformMatrix4fv(glGetUniformLocation(lightingShader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        pinguino.Draw(lightingShader);
+
+
         
         //glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
@@ -268,24 +291,30 @@ int main()
         lampshader.Use();
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        //Primer fuente de luz
+
+        // Primer fuente de luz
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos + movelightPos);
-        model = glm::scale(model, glm::vec3(0.3f));
+        model = glm::translate(model, glm::vec3(10.0f, 0.0f, 0.0f)); // Traslación al centro del escenario
+        model = glm::translate(model, lightPos + movelightPos); // Traslación de la fuente de luz
+        model = glm::scale(model, glm::vec3(0.3f)); // Escalado
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
 
-        // Segundo cubo de fuente de luz
-        glm::vec3 lightPos2 = glm::vec3(3.0f, 0.5f, 2.5f); 
+        // Modelo del segundo cubo de luz
         model = glm::mat4(1.0f);
-        model = glm::translate(model, lightPos2 + movelightPos2);
-        model = glm::scale(model, glm::vec3(0.3f));
+        // Rotación alrededor del eje Z usando angle
+        model = glm::rotate(model, glm::radians(angle), glm::vec3(0.0f, 0.0f, 1.0f)); // Cambia a eje Y si es necesario
+        model = glm::translate(model, glm::vec3(19.0f, 0.0f, 0.0f)); // Traslación al centro del escenario
+        model = glm::translate(model, lightPos2 + movelightPos2); // Luego trasladas a la posición deseada
+        model = glm::scale(model, glm::vec3(2.5f)); // Escalado
         glUniformMatrix4fv(glGetUniformLocation(lampshader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
+
+
 
         // Swap the buffers
         glfwSwapBuffers(window);
@@ -362,16 +391,17 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
         
         movelightPos -= 0.1f;
     }
+    
     // Control de la segunda fuente de luz con teclas I y K
-    if (keys[GLFW_KEY_I])
-    {
-        movelightPos2 += 0.1f; // Mueve la segunda luz en dirección positiva
+    if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS && angle < 180.0f) {
+        angle += 1.2f; // Aumenta el ángulo hacia el sol
+    }
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS && angle > 0.0f) {
+        angle -= 1.2f; // Disminuye el ángulo hacia abajo
     }
 
-    if (keys[GLFW_KEY_K])
-    {
-        movelightPos2 -= 0.1f; // Mueve la segunda luz en dirección negativa
-    }
+
+
 
 
 }
