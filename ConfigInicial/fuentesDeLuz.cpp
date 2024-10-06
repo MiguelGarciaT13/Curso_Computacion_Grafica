@@ -1,3 +1,10 @@
+/*
+		         Práctica 8 Fuentes de Luz
+					  Miguel García
+					   06/10/2024
+*/
+
+
 #include <iostream>
 #include <cmath>
 
@@ -45,10 +52,10 @@ bool active;
 
 // Positions of the point lights
 glm::vec3 pointLightPositions[] = {
-	glm::vec3(0.0f,0.0f, 0.0f),
-	glm::vec3(0.0f,0.0f, 0.0f),
-	glm::vec3(0.0f,0.0f,  0.0f),
-	glm::vec3(0.0f,0.0f, 0.0f)
+	glm::vec3(-1.57f,1.11f, 0.40f),
+	glm::vec3(-0.38f,1.35f, -1.87f),
+	glm::vec3(1.96f,1.02f, 0.5f),
+	glm::vec3(-0.5f,1.19f, 1.71f)
 };
 
 float vertices[] = {
@@ -98,6 +105,41 @@ float vertices[] = {
 
 
 glm::vec3 Light1 = glm::vec3(0);
+glm::vec3 Light2 = glm::vec3(0);
+glm::vec3 Light3 = glm::vec3(0);
+glm::vec3 Light4 = glm::vec3(0);
+
+
+// Variables para controlar el color de las luces
+glm::vec3 lightColor(1.0f, 1.0f, 1.0f); // Inicialmente blanca
+glm::vec3 lightColor2(1.0f, 1.0f, 1.0f);
+glm::vec3 lightColor3(1.0f, 1.0f, 1.0f);
+glm::vec3 lightColor4(1.0f, 1.0f, 1.0f);
+
+// Variables para manejar el estado de las teclas
+bool bPressed = false;  // Estado para la tecla B
+bool nPressed = false;  // Estado para la tecla N
+bool mPressed = false;  // Estado para la tecla M
+bool kPressed = false;  // Estado para la tecla K
+
+// Índice de color para las luces
+static int colorIndex1 = 0;  // Índice para la primera luz
+static int colorIndex2 = 0;  // Índice para la segunda luz
+static int colorIndex3 = 0;  // Índice para la tercera luz
+static int colorIndex4 = 0;  // Índice para la cuarta luz
+
+// Colores disponibles en mi arreglo
+glm::vec3 colors[] = {
+	glm::vec3(1.0f, 0.0f, 0.0f), // Rojo
+	glm::vec3(0.0f, 1.0f, 0.0f), // Verde
+	glm::vec3(0.0f, 0.0f, 1.0f), // Azul
+	glm::vec3(1.0f, 1.0f, 0.0f), // Amarillo
+	glm::vec3(1.0f, 1.0f, 1.0f), // Blanco
+	glm::vec3(1.0f, 0.5f, 0.0f), // Naranja
+	glm::vec3(0.5f, 0.0f, 1.0f)  // Violeta
+};
+
+
 
 
 // Deltatime
@@ -116,7 +158,7 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);*/
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Fuentes de luz", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Fuentes de luz Miguel", nullptr, nullptr);
 
 	if (nullptr == window)
 	{
@@ -157,7 +199,11 @@ int main()
 	Model ball((char*)"Models/ball.obj");
 	Model cube((char*)"Models/Cubo/Cube02.obj");
 	Model Piso((char*)"Models/piso.obj");
-
+	Model arbol((char*)"Models/arbol/tree_in_OBJ.obj");
+	Model poste1((char*)"Models/POSTE1/poste1.obj");
+	Model poste2((char*)"Models/POSTE2/poste2.obj");
+	Model lamp((char*)"Models/lamp/VL2151P01.obj");
+	Model poste3((char*)"Models/POSTE3/poste3.obj");
 
 
 	// First, set the container's VAO (and VBO)
@@ -224,36 +270,36 @@ int main()
 
 
 		// Point light 1
-	    glm::vec3 lightColor;
-		lightColor.x= abs(sin(glfwGetTime() *Light1.x));
-		lightColor.y= abs(sin(glfwGetTime() *Light1.y));
-		lightColor.z= sin(glfwGetTime() *Light1.z);
-
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].position"), -1.57f, 1.11f, 0.400058f);
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), lightColor.x,lightColor.y, lightColor.z);
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].diffuse"), lightColor.x * 0.01f,lightColor.y * 0.01f,lightColor.z * 0.01f);
 		
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].position"), pointLightPositions[0].x, pointLightPositions[0].y, pointLightPositions[0].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), lightColor.x,lightColor.y, lightColor.z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].diffuse"), lightColor.x,lightColor.y,lightColor.z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].specular"), 1.0f, 0.2f, 0.2f);
+		
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].ambient"), 1.0f, 1.0f, 1.0f);  
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[0].specular"), lightColor.x, lightColor.y, lightColor.z);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].linear"), 0.045f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[0].quadratic"),0.075f);
 
-
-
 		// Point light 2
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].position"), pointLightPositions[1].x, pointLightPositions[1].y, pointLightPositions[1].z);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].ambient"), 0.05f, 0.05f, 0.05f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].diffuse"), 0.0f, 0.0f, 0.0f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].specular"), 0.0f, 0.0f, 0.0f);
+
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].position"), -0.38f,1.35f, -1.87);
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].ambient"), lightColor2.x, lightColor2.y, lightColor2.z);
+		
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].ambient"), lightColor2.x * 0.2f, lightColor2.y * 0.2f, lightColor2.z * 0.2f);  // Suave
+		//glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].diffuse"), lightColor2.x, lightColor2.y, lightColor2.z);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[1].specular"), lightColor2.x, lightColor2.y, lightColor2.z);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].constant"), 1.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].linear"), 0.0f);
-		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].quadratic"), 0.0f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].linear"), 0.045f);
+		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[1].quadratic"), 0.075f);
 
 		// Point light 3
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].position"), pointLightPositions[2].x, pointLightPositions[2].y, pointLightPositions[2].z);
+		
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].position"), 1.96f,1.02f,0.50f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].ambient"), 0.0f, 0.0f, 0.0f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].diffuse"), 0.0f, 0.0f, 0.0f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].specular"), 0.0f, 0.0f, 0.0f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[2].specular"), lightColor3.x, lightColor3.y, lightColor3.z);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].linear"), 0.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[2].quadratic"), 0.0f);
@@ -262,7 +308,7 @@ int main()
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].position"), pointLightPositions[3].x, pointLightPositions[3].y, pointLightPositions[3].z);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].ambient"), 0.0f, 0.0f, 0.0f);
 		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].diffuse"), 0.0f, 0.0f, 0.0f);
-		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].specular"), 0.0f, 0.0f, 0.0f);
+		glUniform3f(glGetUniformLocation(lightingShader.Program, "pointLights[3].specular"), lightColor4.x, lightColor4.y, lightColor4.z);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].constant"), 1.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].linear"), 0.0f);
 		glUniform1f(glGetUniformLocation(lightingShader.Program, "pointLights[3].quadratic"), 0.0f);
@@ -300,26 +346,56 @@ int main()
 
 	
 
-		//Carga de modelo 
+		//Carga de modelos 
         view = camera.GetViewMatrix();	
 		model = glm::mat4(1);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Piso.Draw(lightingShader);
 
-
-		//Modelo cube
 		model = glm::mat4(1);
-		model = glm::scale(model, glm::vec3(0.009f, 0.009f, 0.009f));
-		model = glm::translate(model, glm::vec3(0.5f, 2.0f, 0.0f));
-		glEnable(GL_BLEND);//Activa la funcionalidad para trabajar el canal alfa
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		model = glm::scale(model, glm::vec3(0.09f, 0.09f, 0.09f));
+		model = glm::translate(model, glm::vec3(8.0f, -3.4f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
-	    cube.Draw(lightingShader);
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
-		glBindVertexArray(0);
-	
+		arbol.Draw(lightingShader);
 
+		model = glm::mat4(1);
+		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+		model = glm::translate(model, glm::vec3(-200.0f, -35.0f, 3.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		poste1.Draw(lightingShader);
+
+	
+		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
+		model = glm::translate(model, glm::vec3(1500.0f, 1000.0f, 1500.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		lamp.Draw(lightingShader);
+
+		model = glm::mat4(1);
+		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+		model = glm::translate(model, glm::vec3(200.0f, -20.0f, 100.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		poste2.Draw(lightingShader);
+
+		model = glm::mat4(1);
+		model = glm::scale(model, glm::vec3(0.01f, 0.01f, 0.01f));
+		model = glm::translate(model, glm::vec3(0.0f, -30.0f, -250.0f));
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		poste3.Draw(lightingShader);
+
+	
+		////Modelo cube
+		//model = glm::mat4(1);
+		//model = glm::scale(model, glm::vec3(0.009f, 0.009f, 0.009f));
+		//model = glm::translate(model, glm::vec3(0.5f, 2.0f, 0.0f));
+		//glEnable(GL_BLEND);//Activa la funcionalidad para trabajar el canal alfa
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
+	 //   cube.Draw(lightingShader);
+		//glDisable(GL_BLEND);  //Desactiva el canal alfa 
+		//glBindVertexArray(0);
+
+		/*
 		// Also draw the lamp object, again binding the appropriate shader
 		lampShader.Use();
 		// Get location objects for the matrices on the lamp shader (these could be different on a different shader)
@@ -332,25 +408,39 @@ int main()
 		glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 		model = glm::mat4(1);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+		model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		
 		// Draw the light object (using light's vertex attributes)
 		for (GLuint i = 0; i < 4; i++)
 		{
 			model = glm::mat4(1);
 			model = glm::translate(model, pointLightPositions[i]);
-			model = glm::scale(model, glm::vec3(0.2f)); // Make it a smaller cube
+			model = glm::scale(model, glm::vec3(0.02f)); // Make it a smaller cube
 			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
 
 
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
+
+		glfwPollEvents();
 	}
+
+
+	// Mostrar posiciones de las luces en la consola
+		std::cout << "Posiciones de las luces:" << std::endl;
+	for (int i = 0; i < sizeof(pointLightPositions) / sizeof(pointLightPositions[0]); i++) {
+		std::cout << "Luz " << i + 1 << ": ("
+			<< pointLightPositions[i].x << ", "
+			<< pointLightPositions[i].y << ", "
+			<< pointLightPositions[i].z << ")" << std::endl;
+	}
+
 
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
@@ -395,31 +485,73 @@ void DoMovement()
 
 	if (keys[GLFW_KEY_T])
 	{
-		pointLightPositions[0].x += 0.01f;
+		pointLightPositions[3].x += 0.01f;
 	}
 	if (keys[GLFW_KEY_G])
 	{
-		pointLightPositions[0].x -= 0.01f;
+		pointLightPositions[3].x -= 0.01f;
 	}
 
 	if (keys[GLFW_KEY_Y])
 	{
-		pointLightPositions[0].y += 0.01f;
+		pointLightPositions[3].y += 0.01f;
 	}
 
 	if (keys[GLFW_KEY_H])
 	{
-		pointLightPositions[0].y -= 0.01f;
+		pointLightPositions[3].y -= 0.01f;
 	}
 	if (keys[GLFW_KEY_U])
 	{
-		pointLightPositions[0].z -= 0.1f;
+		pointLightPositions[3].z -= 0.1f;
 	}
 	if (keys[GLFW_KEY_J])
 	{
-		pointLightPositions[0].z += 0.01f;
+		pointLightPositions[3].z += 0.01f;
 	}
 	
+
+	// Lógica para cambiar el color de la luz 1 con la tecla B
+	if (keys[GLFW_KEY_B] && !bPressed) {  // Verifica si se presiona B y si antes no estaba presionada
+		bPressed = true;  // Establece la bandera de que la tecla fue presionada
+		colorIndex1 = (colorIndex1 + 1) % 7;  // Cambia al siguiente color en el arreglo
+		lightColor = colors[colorIndex1];  // Asigna el nuevo color a la luz 1
+	}
+	else if (!keys[GLFW_KEY_B]) {  // Detecta cuando se deja de presionar B
+		bPressed = false;  // Resetea la bandera para permitir la siguiente pulsación
+	}
+
+	// Lógica para cambiar el color de la luz 2 con la tecla N
+	if (keys[GLFW_KEY_N] && !nPressed) {  // Verifica si se presiona N y si antes no estaba presionada
+		nPressed = true;  // Establece la bandera de que la tecla fue presionada
+		colorIndex2 = (colorIndex2 + 1) % 7;  // Cambia al siguiente color en el arreglo
+		lightColor2 = colors[colorIndex2];  // Asigna el nuevo color a la luz 2
+	}
+	else if (!keys[GLFW_KEY_N]) {  // Detecta cuando se deja de presionar N
+		nPressed = false;  // Resetea la bandera para permitir la siguiente pulsación
+	}
+
+	// Lógica para cambiar el color de la luz 3 con la tecla M
+	if (keys[GLFW_KEY_M] && !mPressed) {  // Verifica si se presiona M y si antes no estaba presionada
+		mPressed = true;  // Establece la bandera de que la tecla fue presionada
+		colorIndex3 = (colorIndex3 + 1) % 7;  // Cambia al siguiente color en el arreglo
+		lightColor3 = colors[colorIndex3];  // Asigna el nuevo color a la luz 3
+	}
+	else if (!keys[GLFW_KEY_M]) {  // Detecta cuando se deja de presionar M
+		mPressed = false;  // Resetea la bandera para permitir la siguiente pulsación
+	}
+
+	// Lógica para cambiar el color de la luz 4 con la tecla K
+	if (keys[GLFW_KEY_K] && !kPressed) {  // Verifica si se presiona K y si antes no estaba presionada
+		kPressed = true;  // Establece la bandera de que la tecla fue presionada
+		colorIndex4 = (colorIndex4 + 1) % 7;  // Cambia al siguiente color en el arreglo
+		lightColor4 = colors[colorIndex4];  // Asigna el nuevo color a la luz 4
+	}
+	else if (!keys[GLFW_KEY_K]) {  // Detecta cuando se deja de presionar K
+		kPressed = false;  // Resetea la bandera para permitir la siguiente pulsación
+	}
+	
+
 }
 
 // Is called whenever a key is pressed/released via GLFW
