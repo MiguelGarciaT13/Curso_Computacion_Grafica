@@ -1,3 +1,10 @@
+/*
+				 Práctica 9 Animación Básica
+					  Miguel García
+					   13/10/2024
+*/
+
+
 #include <iostream>
 #include <cmath>
 
@@ -106,16 +113,28 @@ glm::vec3 Light1 = glm::vec3(0);
 float rotBall = 0;
 
 
-// Se definen las alturas
+// Variables globales
+float radius = 1.0f; // recorrido del perro
+float dogRotation = 0.0f; // Ángulo de rotación del perro
+float lightHeight = 1.2f; // Altura que sube la pelota
 float noseHeight = 0.0f; // Altura de la nariz del perro
-float lightHeight = 1.7f; // Altura de la fuente de luz
+float ballPositionY = noseHeight; // Posición Y de la pelota
+float speed = 0.003f; // Velocidad de movimiento
+float jumpHeight = 0.8f; // Altura del salto del perro
+bool AnimBall = false; // Variable para saber cuándo está activada la animación
+bool movingUp = true; // Indica si la pelota está subiendo o bajando
+bool pushingBall = false; // Controla si el perro está empujando la pelota
+float pushDistance = 0.1f; // Distancia para activar el empuje
+float rotationSpeed = 0.1f; // Velocidad de rotación del perro
+float ballRotation = 0.0f; // Ángulo de rotación de la pelota
+float dogJumpPositionY = 0.0f; // Altura actual del salto del perro
+bool jumping = false; // Estado del salto del perro
 
-float ballPositionY = noseHeight; // Variable para controlar la posición de la pelota
-float speed = 0.0015; // Velocidad de movimiento
-bool AnimBall = false; //Variable para saber cuando N está activada
-bool movingUp = true;
-
-
+float ballRotationSpeed = 0.1f; // Velocidad de rotación de la pelota
+bool ballGoingUp = false; // Para controlar si la pelota está subiendo
+float ballSpeed = 0.005f; // Velocidad de movimiento de la pelota
+float dogPositionX = 0.0f; // Posición X del perro
+float dogPositionZ = 0.0f; // Posición Z del perro
 
 // Deltatime
 GLfloat deltaTime = 0.0f;	// Time between current frame and last frame
@@ -133,7 +152,7 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);*/
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Animacion basica", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Animacion basica Miguel", nullptr, nullptr);
 
 	if (nullptr == window)
 	{
@@ -296,31 +315,51 @@ int main()
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		Piso.Draw(lightingShader);
 
-		model = glm::mat4(1);
+
+		//Carga del modelo dog
+		model = glm::mat4(1.0f);
+
+		// Rotar primero el perro alrededor del eje Y
+		model = glm::rotate(model, glm::radians(dogRotation), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// Ajustar la posición del perro en Y y Z
+		model = glm::translate(model, glm::vec3(-0.53f + dogPositionX, 0.0f + dogJumpPositionY, 1.92f)); // Traslación en Y con salto
+		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		// Enviar la matriz de modelo al shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
+
+		// Dibujar el perro
 		Dog.Draw(lightingShader);
 
-		model = glm::mat4(1);
-		model = glm::scale(model, glm::vec3(0.09f, 0.09f, 0.09f));
-		model = glm::translate(model, glm::vec3(15.0f, -3.4f, 25.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		arbol.Draw(lightingShader);
 
-		//Se manda a dibujar el modelo de la pelota
-		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Activa la funcionalidad para trabajar el canal alfa
+
+	
+		// Carga del modelo pelota
+		model = glm::mat4(1.0f); // Inicializar la matriz del modelo
+		glEnable(GL_BLEND);      // Activa la funcionalidad para trabajar el canal alfa
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
 
-		// Ajustar la posición de la pelota
-		model = glm::translate(model, glm::vec3(0.0f, ballPositionY, 0.0f)); // La pelota se mueve en el eje Y
-		
+		// Aplicar rotación alrededor del eje Y 
+		model = glm::rotate(model, glm::radians(-ballRotation), glm::vec3(0.0f, 1.0f, 0.0f)); // Rotar en torno al eje Y
+
+		// Ajustar la posición de la pelota en Y y Z
+		model = glm::translate(model, glm::vec3(dogPositionX, ballPositionY, 1.45f)); // Traslación en Y y Z
+
+		// Cargar la matriz transformada en el shader
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
+
+		// Dibujar la pelota
+		Ball.Draw(lightingShader);
+
+		// Desactivar el canal alfa
+		glDisable(GL_BLEND);
 		glBindVertexArray(0);
+
+
+
 	
 
 		// Also draw the lamp object, again binding the appropriate shader
@@ -457,35 +496,76 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode
 			Light1 = glm::vec3(0);//Cuado es solo un valor en los 3 vectores pueden dejar solo una componente
 		}
 	}
-
-	if (keys[GLFW_KEY_N])
-	{
-		AnimBall = !AnimBall;
+	// Verifica si la tecla N está presionada
+	if (keys[GLFW_KEY_N]) {
+		AnimBall = !AnimBall; // Activa o desactiva la animación
 	}
 }
+
 // Función de animación
 void Animation() {
 	if (AnimBall) {
-		// Si la pelota está en o por debajo de la altura de la luz, sube la pelota
-		if (movingUp) {
-			ballPositionY += speed; // Mover hacia arriba
-			// Asegura de no sobrepasar la altura de la luz
-			if (ballPositionY >= lightHeight) {
-				ballPositionY = lightHeight; // Fija en la altura de la luz
-				movingUp = false; // Cambia dirección a bajar
+		// Incrementa el ángulo de rotación del perro
+		dogRotation += rotationSpeed;
+
+		// Calcula la posición del perro en su camino circular
+		float dogPositionX = cos(glm::radians(dogRotation)) * radius;
+		float dogPositionZ = sin(glm::radians(dogRotation)) * radius;
+
+		// Detección de contacto: si el perro está cerca de la pelota
+	
+		if (fabs(dogPositionX - 0.0f) < pushDistance && fabs((dogJumpPositionY + noseHeight) - ballPositionY) < 0.1f) {
+			pushingBall = true; // Activa el empuje
+			jumping = true; // Inicia el salto del perro
+			ballGoingUp = true; // Indica que la pelota está subiendo
+		}
+
+		// Lógica de movimiento de la pelota
+		if (pushingBall) {
+			if (ballGoingUp) {
+				ballPositionY += ballSpeed; // La pelota sube
+				if (ballPositionY >= lightHeight) {
+					ballPositionY = lightHeight; // Fija en la altura de la luz
+					ballGoingUp = false; // Cambia a bajar después de alcanzar la altura máxima
+				}
+			}
+			else {
+				ballPositionY -= ballSpeed; // La pelota baja
+				if (ballPositionY <= noseHeight) {
+					ballPositionY = noseHeight; // Fija en la altura de la nariz
+					pushingBall = false; // Termina el empuje
+				}
 			}
 		}
-		// Si la pelota está en o por encima de la altura de la nariz, baja la pelota
 		else {
-			ballPositionY -= speed; // Mover hacia abajo
-			// Asegura de no sobrepasar la altura de la nariz
-			if (ballPositionY <= noseHeight) {
-				ballPositionY = noseHeight; // Fija en la altura de la nariz
-				movingUp = true; // Cambiar dirección a subir
+			// Rotación de la pelota
+			ballRotation += ballRotationSpeed; // Rotar la pelota
+		}
+
+
+		// Lógica de salto del perro
+		if (jumping) {
+			dogJumpPositionY += speed; // Sube el perro
+			if (dogJumpPositionY >= jumpHeight) {
+				dogJumpPositionY = jumpHeight; // Fija en la altura del salto
+				jumping = false; // Termina el salto
 			}
+		}
+		else if (dogJumpPositionY > 0.0f) {
+			dogJumpPositionY -= speed; // Baja el perro
+			if (dogJumpPositionY <= 0.0f) {
+				dogJumpPositionY = 0.0f; // Fija en el suelo
+			}
+		}
+
+		// Reinicia la rotación del perro
+		if (dogRotation > 360.0f) {
+			dogRotation -= 360.0f; // Reinicia la rotación
 		}
 	}
 }
+
+
 
 void MouseCallback(GLFWwindow *window, double xPos, double yPos)
 {
