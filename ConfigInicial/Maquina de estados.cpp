@@ -1,3 +1,9 @@
+/*
+				 Práctica 10 (animación por maquina de estados)
+					  Miguel García
+					   21/10/2024
+*/
+
 #include <iostream>
 #include <cmath>
 
@@ -99,19 +105,28 @@ float vertices[] = {
 
 
 glm::vec3 Light1 = glm::vec3(0);
+
 //Anim
 float rotBall = 0.0f;
 bool AnimBall = false;
 bool AnimDog = false;
 float rotDog = 0.0f;
-int dogAnim = 0;
 float FLegs = 0.0f;
 float RLegs = 0.0f;
 float head = 0.0f;
 float tail = 0.0f;
 glm::vec3 dogPos (0.0f,0.0f,0.0f);
 float dogRot = 0.0f;
+
+bool dogAnim = false; // Variable para activar y desactivar mi animación
 bool step = false;
+float dogRotation = 0.0f;  // Ángulo de rotación del perro
+
+// Variables para manejar los 4 estados
+bool estado1Activo = true;
+bool estado2Activo = false;   
+bool estado3Activo = false;
+bool estado4Activo = false;
 
 
 
@@ -179,8 +194,6 @@ int main()
 	Model B_LeftLeg((char*)"Models/B_LeftLegDog.obj");
 	Model Piso((char*)"Models/piso.obj");
 	Model Ball((char*)"Models/ball.obj");
-
-
 
 	// First, set the container's VAO (and VBO)
 	GLuint VBO, VAO;
@@ -305,9 +318,12 @@ int main()
 		model = glm::mat4(1);
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 0);
+
+
 		//Body
 		modelTemp= model = glm::translate(model, dogPos);
 		modelTemp= model = glm::rotate(model, glm::radians(dogRot), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelTemp = model = glm::rotate(model, glm::radians(dogRotation), glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		DogBody.Draw(lightingShader);
 
@@ -351,16 +367,16 @@ int main()
 		B_RightLeg.Draw(lightingShader);  
 
 
-		model = glm::mat4(1);
-		glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
-		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
-		glDisable(GL_BLEND);  //Desactiva el canal alfa 
-		glBindVertexArray(0);
+		//model = glm::mat4(1);
+		//glEnable(GL_BLEND);//Avtiva la funcionalidad para trabajar el canal alfa
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+		//glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
+		//model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
+		//glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+	 //   Ball.Draw(lightingShader); 
+		//glDisable(GL_BLEND);  //Desactiva el canal alfa 
+		//glBindVertexArray(0);
 	
 
 		// Also draw the lamp object, again binding the appropriate shader
@@ -504,60 +520,267 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 	}
 	if (keys[GLFW_KEY_B])
 	{
-		dogAnim = 1;
+		dogAnim = !dogAnim; // Activa o desactiva la animación
 
 	}
-	
 }
 void Animation() {
-	if (AnimBall)
-	{
+	if (AnimBall) {
 		rotBall += 0.4f;
-		//printf("%f", rotBall);
 	}
-	
-	if (AnimDog)
-	{
+
+	if (AnimDog) {
 		rotDog -= 0.6f;
-		//printf("%f", rotBall);
 	}
-	
-	if (dogAnim == 1) {    // Walk animation
 
-		// Solo ejecutar la animación si el perro no ha llegado a la posición final
-		if (dogPos.z < 2.0f) {
-			if (!step) {   // State 1
-				RLegs += 0.04f;
-				FLegs += 0.04f;
-				head += 0.04f;
-				tail += 0.04f;
+	if (dogAnim) { // Walk animation
 
-				if (RLegs > 15.0f)   // Condition
-					step = true;
+		// Estado 1: caminar mientras dogPos.z < 2 y girar 90°
+		if (estado1Activo) {
+			if (dogPos.z < 2.0f) {
+				// Movimiento hacia adelante
+				dogPos.z += 0.0009;
+
+				// Movimiento de cabeza, cola y patas.
+				if (!step) {
+					RLegs += 0.03f;
+					FLegs += 0.03f;
+					head += 0.03f;
+					tail += 0.03f;
+
+					if (RLegs > 15.0f) {
+						step = true;
+					}
+				}
+				else {
+					RLegs -= 0.03f;
+					FLegs -= 0.03f;
+					head -= 0.03f;
+					tail -= 0.03f;
+
+					if (RLegs < -15.0f) {
+						step = false;
+					}
+				}
 			}
-			else
-			{
-				RLegs -= 0.04f;
-				FLegs -= 0.04f;
-				head -= 0.04f;
-				tail -= 0.04f;
+			else {
+				// Girar 90 grados
+				if (dogRotation < 90.0f) {
+					dogRotation += 0.07;
 
-				if (RLegs < -15.0f)   // Condition
-					step = false;
+					// Cuando el perro gira debe seguir moviendo sus patas, cabeza y cola
+					if (!step) {
+						RLegs += 0.03f;
+						FLegs += 0.03f;
+						head += 0.03f;
+						tail += 0.03f;
+
+						if (RLegs > 15.0f) {
+							step = true;
+						}
+					}
+					else {
+						RLegs -= 0.03f;
+						FLegs -= 0.03f;
+						head -= 0.03f;
+						tail -= 0.03f;
+
+						if (RLegs < -15.0f) {
+							step = false;
+						}
+					}
+
+				}
+				else {
+					// Cambiar al estado 2
+					estado1Activo = false;
+					estado2Activo = true;
+				}
 			}
-
-			// Movimiento hacia adelante
-			dogPos.z += 0.002;
 		}
-		else {
-			// Detener todos los movimientos
-			RLegs = 0.0f;  // Detener patas
-			FLegs = 0.0f;
-			head = 0.0f;   // Detener cabeza
-			tail = 0.0f;   // Detener cola
 
-			// Se detiene la animación del perro
-			dogAnim = 0;   
+		// Estado 2: caminar mientras dogPos.x < 2 y girar 90°
+		if (estado2Activo) {
+			if (dogPos.x < 2.0f) {
+				// Movimiento hacia adelante
+				dogPos.x += 0.0009;
+
+				// Movimiento de cabeza, cola y patas.
+				if (!step) {
+					RLegs += 0.03f;
+					FLegs += 0.03f;
+					head += 0.03f;
+					tail += 0.03f;
+
+					if (RLegs > 15.0f) {
+						step = true;
+					}
+				}
+				else {
+					RLegs -= 0.03f;
+					FLegs -= 0.03f;
+					head -= 0.03f;
+					tail -= 0.03f;
+
+					if (RLegs < -15.0f) {
+						step = false;
+					}
+				}
+			}
+			else {
+				// Girar 90 grados
+				if (dogRotation < 180.0f) {
+					dogRotation += 0.07;
+					// Movimiento de cabeza, cola y patas.
+					if (!step) {
+						RLegs += 0.03f;
+						FLegs += 0.03f;
+						head += 0.03f;
+						tail += 0.03f;
+
+						if (RLegs > 15.0f) {
+							step = true;
+						}
+					}
+					else {
+						RLegs -= 0.03f;
+						FLegs -= 0.03f;
+						head -= 0.03f;
+						tail -= 0.03f;
+
+						if (RLegs < -15.0f) {
+							step = false;
+						}
+					}
+
+				}
+				else {
+					// Cambiar al estado 3
+					estado2Activo = false;
+					estado3Activo = true;
+				}
+			}
+		}
+
+		// Estado 3: caminar mientras dogPos.z > - 2 y girar 135°
+		if (estado3Activo) {
+			if (dogPos.z > -2.0f) {
+				// Movimiento hacia z = -2
+				dogPos.z -= 0.0009;
+
+				// Movimiento de cabeza, cola y patas.
+				if (!step) {
+					RLegs += 0.03f;
+					FLegs += 0.03f;
+					head += 0.03f;
+					tail += 0.03f;
+
+					if (RLegs > 15.0f) {
+						step = true;
+					}
+				}
+				else {
+					RLegs -= 0.03f;
+					FLegs -= 0.03f;
+					head -= 0.03f;
+					tail -= 0.03f;
+
+					if (RLegs < -15.0f) {
+						step = false;
+					}
+				}
+			}
+			else {
+				// Girar 135 grados
+				if (dogRotation < 315.0f) {
+					dogRotation += 0.07;
+					// Movimiento de cabeza, cola y patas.
+					if (!step) {
+						RLegs += 0.03f;
+						FLegs += 0.03f;
+						head += 0.03f;
+						tail += 0.03f;
+
+						if (RLegs > 15.0f) {
+							step = true;
+						}
+					}
+					else {
+						RLegs -= 0.03f;
+						FLegs -= 0.03f;
+						head -= 0.03f;
+						tail -= 0.03f;
+
+						if (RLegs < -15.0f) {
+							step = false;
+						}
+					}
+				}
+				else {
+					// Cambiar al estado 4
+					estado3Activo = false;
+					estado4Activo = true;
+				}
+			}
+		}
+
+		// Estado 4: Regresar a la posición inicial (origen)
+		if (estado4Activo) {
+			// Regresar al origen
+			if (dogPos.x > 0.0f) {
+				dogPos.x -= 0.0006; // Regresar en x
+			}
+
+			if (dogPos.z < 0.0f) {
+				dogPos.z += 0.0006; // Regresar en z
+			}
+
+			// Movimiento de cabeza, cola y patas.
+			if (!step) {
+				RLegs += 0.02f;
+				FLegs += 0.02f;
+				head += 0.02f;
+				tail += 0.02f;
+
+				if (RLegs > 15.0f) {
+					step = true;
+				}
+			}
+			else {
+				RLegs -= 0.02f;
+				FLegs -= 0.02f;
+				head -= 0.02f;
+				tail -= 0.02f;
+
+				if (RLegs < -15.0f) {
+					step = false;
+				}
+			}
+
+			// Suavizar rotación hacia 0
+			if (dogPos.x <= 0.0f && dogPos.z >= 0.0f) {
+				dogPos.x = 0.0f; // Me aseguro de estar en la posición exacta
+				dogPos.z = 0.0f;
+
+				if (dogRotation < 360.0f) {
+					dogRotation += 0.07f; // Suavizar la rotación hacia 360
+				}
+				if (dogRotation >= 360.0f) {
+					dogRotation = 0.0f; // Reiniciar a 0
+				}
+			}
+				// Reiniciar estados cuando la rotación es 0
+				if (dogRotation == 0.0f) {
+
+				// Reiniciar estados
+				estado1Activo = true; // Reiniciar estado 1
+				estado4Activo = false; // Desactivar estado 4
+				step = false; // Reiniciar el paso de las patas
+				RLegs = 0.0f; // Reiniciar posición de las patas
+				FLegs = 0.0f;
+				head = 0.0f; // Reiniciar cabeza
+				tail = 0.0f; // Reiniciar cola
+			}
 		}
 	}
 }
