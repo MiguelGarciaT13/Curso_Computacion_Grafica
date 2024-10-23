@@ -114,7 +114,7 @@ float sit = 0.0f;
 //KeyFrames
 float dogPosX , dogPosY , dogPosZ  ;
 
-#define MAX_FRAMES 50
+#define MAX_FRAMES 35
 
 int i_max_steps = 190;
 int i_curr_steps = 0;
@@ -223,7 +223,7 @@ int main()
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);*/
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Animacion maquina de estados Miguel", nullptr, nullptr);
+	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Animacion por KeyFrames Miguel", nullptr, nullptr);
 
 	if (nullptr == window)
 	{
