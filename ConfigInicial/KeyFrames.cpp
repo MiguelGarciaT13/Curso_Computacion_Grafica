@@ -1,5 +1,12 @@
+/*
+				 Práctica 11 (animación por KeyFrames)
+					  Miguel García
+					   26/10/2024
+*/
+
 #include <iostream>
 #include <cmath>
+#include <fstream> // Para manejo de archivos
 
 // GLEW
 #include <GL/glew.h>
@@ -30,6 +37,11 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 void MouseCallback(GLFWwindow *window, double xPos, double yPos);
 void DoMovement();
 void Animation();
+void saveAnimationToFile();
+void loadAnimationFromFile();
+
+void clearAnimationFile();
+void resetAnimationAndFile();
 
 // Window dimensions
 const GLuint WIDTH = 800, HEIGHT = 600;
@@ -109,12 +121,10 @@ float head = 0.0f;
 float tail = 0.0f;
 float sit = 0.0f;
 
-
-
 //KeyFrames
 float dogPosX , dogPosY , dogPosZ  ;
 
-#define MAX_FRAMES 35
+#define MAX_FRAMES 70
 
 int i_max_steps = 190;
 int i_curr_steps = 0;
@@ -144,8 +154,6 @@ typedef struct _frame {
 	float sit;
 	float sitInc;
 
-
-
 }FRAME;
 
 FRAME KeyFrame[MAX_FRAMES];
@@ -171,9 +179,8 @@ void saveFrame(void)
 
 	KeyFrame[FrameIndex].sit = sit;
 	
-	
 	FrameIndex++;
-}
+} 
 
 void resetElements(void)
 {
@@ -215,6 +222,8 @@ int main()
 {
 	// Init GLFW
 	glfwInit();
+
+	loadAnimationFromFile();
 	// Set all the required options for GLFW
 	/*glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -430,9 +439,7 @@ int main()
 		//Body
 		modelTemp= model = glm::translate(model, glm::vec3(dogPosX,dogPosY,dogPosZ));
 		modelTemp = model = glm::rotate(model, glm::radians(rotDog), glm::vec3(0.0f, 1.0f, 0.0f));
-		
 		modelTemp = model = glm::rotate(model, glm::radians(sit), glm::vec3(1.0f, 0.0f, 0.0f));
-		
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		DogBody.Draw(lightingShader);
 
@@ -449,7 +456,6 @@ int main()
 		model = glm::rotate(model, glm::radians(tail), glm::vec3(0.0f, 0.0f, -1.0f)); 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model)); 
 		DogTail.Draw(lightingShader);
-
 
 		//Front Left Leg
 		model = modelTemp;
@@ -487,7 +493,7 @@ int main()
 		glUniform1i(glGetUniformLocation(lightingShader.Program, "transparency"), 1);
 		model = glm::rotate(model, glm::radians(rotBall), glm::vec3(0.0f, 1.0f, 0.0f));
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-	    Ball.Draw(lightingShader); 
+	    //Ball.Draw(lightingShader); 
 		glDisable(GL_BLEND);  //Desactiva el canal alfa 
 		glBindVertexArray(0);
 	
@@ -522,13 +528,9 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
-	
-	
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 	glfwTerminate();
-
-
 
 	return 0;
 }
@@ -696,39 +698,35 @@ void DoMovement()
 }
 
 // Is called whenever a key is pressed/released via GLFW
-void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode)
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-
-	if (keys[GLFW_KEY_L])
-	{
-		if (play == false && (FrameIndex > 1))
-		{
-
+	// Reproducir animación
+	if (keys[GLFW_KEY_L]) {
+		if (!play && FrameIndex > 1) {
 			resetElements();
-			//First Interpolation				
 			interpolation();
-
+			loadAnimationFromFile();
 			play = true;
 			playIndex = 0;
 			i_curr_steps = 0;
 		}
-		else
-		{
+		else {
 			play = false;
 		}
-
 	}
 
-	if (keys[GLFW_KEY_K])
-	{
-		if (FrameIndex < MAX_FRAMES)
-		{
+	// Guardar la animación
+	if (keys[GLFW_KEY_K]) {
+		if (FrameIndex < MAX_FRAMES) {
 			saveFrame();
+			saveAnimationToFile();
 		}
-
 	}
 
-
+	// Limpiar el archivo y reiniciar animación al presionar 0
+	/*if (keys[GLFW_KEY_0]) {
+		resetAnimationAndFile();
+	}*/
 
 	if (GLFW_KEY_ESCAPE == key && GLFW_PRESS == action)
 	{
@@ -753,43 +751,104 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mode
 		if (active)
 		{
 			Light1 = glm::vec3(0.2f, 0.8f, 1.0f);
-			
+
 		}
 		else
 		{
 			Light1 = glm::vec3(0);//Cuado es solo un valor en los 3 vectores pueden dejar solo una componente
 		}
 	}
-	
-	
 }
-void Animation() {
 
-	if (play)
-	{
-		if (i_curr_steps >= i_max_steps) //end of animation between frames?
-		{
+// Limpiar el archivo de animación
+void clearAnimationFile() {
+	std::ofstream outFile("animation_data.bin", std::ios::binary | std::ios::trunc);
+	if (outFile.is_open()) {
+		outFile.close(); 
+		std::cout << "Archivo de animacion limpiado exitosamente.\n";
+	}
+	else {
+		std::cerr << "Error al abrir el archivo para limpiar.\n";
+	}
+}
+
+// Reiniciar la animación y limpiar el archivo
+void resetAnimationAndFile() {
+	// Limpiar el archivo de animación
+	clearAnimationFile();
+
+	// Reiniciar las posiciones del modelo a las iniciales usando KeyFrame[0]
+	resetElements();
+
+	// Reiniciar el índice de los frames
+	FrameIndex = 0;
+
+	// Reiniciar el estado de la animación
+	play = false;           // Detener la animación
+	playIndex = 0;
+
+	// Guardar el estado inicial en el archivo
+	saveAnimationToFile(); // Llama a esta función para guardar las posiciones iniciales
+
+	// Reiniciar el estado de la animación
+	play = false; // Detener la animación
+	playIndex = 0; // Reiniciar el índice
+	i_curr_steps = 0; // Reiniciar el contador de pasos
+	std::cout << "Animacion reiniciada.\n";
+}
+
+// Guardar los KeyFrames en mi archivo binario
+void saveAnimationToFile() {
+	std::ofstream outFile("animation_data.bin", std::ios::binary);
+	if (outFile.is_open()) {
+		int framesToSave = std::min(FrameIndex, MAX_FRAMES);
+		outFile.write(reinterpret_cast<char*>(&framesToSave), sizeof(framesToSave));
+		outFile.write(reinterpret_cast<char*>(KeyFrame), sizeof(FRAME) * framesToSave); // Guarda solo los frames utilizados
+		outFile.close();
+		//std::cout << "Animacion guardada exitosamente.\n";
+	}
+	else {
+		std::cerr << "Error al abrir el archivo para guardar.\n";
+	}
+}
+
+// Cargar los frames desde mi archivo binario
+void loadAnimationFromFile() {
+	std::ifstream inFile("animation_data.bin", std::ios::binary);
+	if (inFile.is_open()) {
+		inFile.read(reinterpret_cast<char*>(&FrameIndex), sizeof(FrameIndex));
+		inFile.read(reinterpret_cast<char*>(KeyFrame), sizeof(FRAME) * FrameIndex); // Carga solo la cantidad de frames guardados
+		inFile.close();
+		std::cout << "Animacion cargada exitosamente.\n";
+	}
+	else {
+		std::cerr << "No se encontro archivo de animacion guardada.\n";
+	}
+}
+
+void Animation() {
+	if (play) {
+		// Verificar si hemos llegado al final de la interpolación entre frames
+		if (i_curr_steps >= i_max_steps) {
 			playIndex++;
-			if (playIndex > FrameIndex - 2)	//end of total animation?
-			{
-				printf("termina anim\n");
-				playIndex = 0;
-				play = false;
+			// Verificar si hemos llegado al final de la animación
+			if (playIndex >= FrameIndex - 1) {
+				printf("Termina animacion\n");
+				playIndex = 0; // Reiniciar al principio
+				play = false;  // Detener la animación
 			}
-			else //Next frame interpolations
-			{
-				i_curr_steps = 0; //Reset counter
-				//Interpolation
-				interpolation();
+			else {
+				// Preparar la interpolación para el siguiente frame
+				i_curr_steps = 0; // Reiniciar el contador
+				interpolation();   // Calcular la interpolación del siguiente frame
 			}
 		}
-		else
-		{
-			//Draw animation
+		else {
+			// Actualizar las posiciones y rotaciones para la animación
 			dogPosX += KeyFrame[playIndex].incX;
 			dogPosY += KeyFrame[playIndex].incY;
 			dogPosZ += KeyFrame[playIndex].incZ;
-			
+
 			head += KeyFrame[playIndex].headInc;
 			tail += KeyFrame[playIndex].tailInc;
 			FLegs += KeyFrame[playIndex].FLegsInc;
@@ -798,11 +857,10 @@ void Animation() {
 
 			rotDog += KeyFrame[playIndex].rotDogInc;
 
+			// Incrementar el contador de pasos
 			i_curr_steps++;
 		}
-
 	}
-	
 }
 
 void MouseCallback(GLFWwindow *window, double xPos, double yPos)
